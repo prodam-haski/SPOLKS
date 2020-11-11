@@ -24,12 +24,14 @@ public class Server {
                         ServerUDP serverUDP = new ServerUDP();
                         serverUDPThread = new Thread(serverUDP);
                         serverUDPThread.start();
+                        serverUDPThread.setPriority(Thread.MAX_PRIORITY);
                     }
                     if (mode.startsWith("TCP")) {
                         ServerTCP serverTCP = new ServerTCP();
                         serverTCPThread = new Thread(serverTCP);
                         isTCPRunning = true;
                         serverTCPThread.start();
+                        serverTCPThread.setPriority(Thread.MAX_PRIORITY);
                     }
                     if (mode.startsWith("stop TCP") && isTCPRunning) {
                         serverTCPThread.interrupt();

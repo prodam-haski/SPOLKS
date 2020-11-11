@@ -39,25 +39,35 @@ public class TCProtocol implements Runnable {
                 if (br.ready()) {
                     boolean isSpecialCommand = false;
                     String clientCommand = br.readLine();
-                    if (clientCommand.startsWith("upload")) {
-                        isSpecialCommand = true;
-                        upload(clientCommand);
-                    }
-                    if (clientCommand.startsWith("download")) {
-                        isSpecialCommand = true;
-                        download(clientCommand);
+                    if (!socket.isOutputShutdown()) {
+                        if (clientCommand.startsWith("upload")) {
+                            isSpecialCommand = true;
+                            upload(clientCommand);
+                        }
+                        if (clientCommand.startsWith("download")) {
+                            isSpecialCommand = true;
+                            download(clientCommand);
 
-                    }
-                    if (!isSpecialCommand) {
-                        dataOutputStream.writeUTF(clientCommand);
-                        dataOutputStream.flush();
-                        System.out.println("Client sent message " + clientCommand + " to server.");
-                    }
-                    System.out.println(dataInputStream.readUTF());
+                        }
+                        if(clientCommand.startsWith("exit")){
+                            dataOutputStream.writeUTF("quit");
+                            System.out.println(dataInputStream.readUTF());
+                            dataOutputStream.close();
+                            dataInputStream.close();
+                            socket.close();
+                            return;
+                        }
+                        if (!isSpecialCommand) {
+                            dataOutputStream.writeUTF(clientCommand);
+                            dataOutputStream.flush();
+                            System.out.println("Client sent message " + clientCommand + " to server.");
+                        }
+                        System.out.println(dataInputStream.readUTF());
+                    }else System.out.println("Disconect...");
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Disconect...");
         }
 
     }
@@ -90,7 +100,7 @@ public class TCProtocol implements Runnable {
                 dataOutputStream.writeUTF("File was received");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Disconect...");
         }
     }
 
@@ -121,7 +131,7 @@ public class TCProtocol implements Runnable {
                 fin.close();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Disconect...");
         }
     }
 }

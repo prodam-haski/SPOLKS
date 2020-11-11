@@ -28,10 +28,6 @@ public class ServerTCP implements Runnable {
         System.out.println("TCP server is running ");
         try {
             while (true) {
-                if(Thread.interrupted()){
-                    closeConnection();
-                    return;
-                }
                 client = server.accept();
                 connection = new Connection(client.getInetAddress());
                 out = new DataOutputStream(client.getOutputStream());
@@ -139,6 +135,7 @@ public class ServerTCP implements Runnable {
                         }
                         if(Thread.interrupted()){
                             closeConnection();
+                            stopServer();
                             return;
                         }
 
@@ -171,6 +168,10 @@ public class ServerTCP implements Runnable {
         client.close();
         System.out.println("Closing connections & channels - DONE.");
     }
+    private void stopServer() throws IOException {
+        server.close();
+    }
+
 
     private void time() throws IOException {
         System.out.println("Client wants to know the time");

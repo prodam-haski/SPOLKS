@@ -11,15 +11,13 @@ import java.util.List;
 
 public class ServerUDP implements Runnable {
 
-    private DatagramSocket socket;
     private List<UDPClient> udpClients;
 
     private DatagramPacket receivePacket;
     private DatagramPacket sendPacket;
     private byte[] buf = new byte[64 * 1024];
 
-    public ServerUDP() throws SocketException {
-        socket = new DatagramSocket(3300);
+    public ServerUDP() {
         udpClients = new ArrayList<>();
         receivePacket = new DatagramPacket(buf, buf.length);
         sendPacket = new DatagramPacket(buf, buf.length);
@@ -28,9 +26,11 @@ public class ServerUDP implements Runnable {
     @Override
     public void run() {
         System.out.println("UDP server is running ");
-        while (true) {
-            try {
+        try {
+            DatagramSocket socket = new DatagramSocket(6600);
+            while (true) {
                 socket.receive(receivePacket);
+                System.out.println("Client was connected");
                 UDPClient currentClient = new UDPClient(receivePacket.getAddress(), receivePacket.getPort());
                 sendPacket.setAddress(receivePacket.getAddress());
                 sendPacket.setPort(receivePacket.getPort());
@@ -54,7 +54,7 @@ public class ServerUDP implements Runnable {
                     }
                 }
 
-                String entry = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                String entry = new String(receivePacket.getData());
                 System.out.println("UDP message - " + entry);
 
                 boolean commandIsExist = false;
@@ -99,13 +99,13 @@ public class ServerUDP implements Runnable {
 
                 }
 
-                if(!formerClient) udpClients.add(currentClient);
+                if (!formerClient) udpClients.add(currentClient);
                 socket.send(sendPacket);
-                if(Thread.interrupted())break;
+                if (Thread.interrupted()) break;
 
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        }catch(IOException e){
+            e.printStackTrace();
         }
         System.out.println("UDP server was stopped");
     }
