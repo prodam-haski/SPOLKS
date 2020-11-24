@@ -6,6 +6,7 @@ public class UDPClient {
     private InetAddress address;
     private int port;
 
+    private boolean wantService;
     private boolean wantUpload;
     private boolean wantDownload;
 
@@ -16,6 +17,14 @@ public class UDPClient {
         this.port = port;
         wantDownload = false;
         wantUpload = false;
+    }
+
+    public boolean isWantService() {
+        return wantService;
+    }
+
+    public void setWantService(boolean wantService) {
+        this.wantService = wantService;
     }
 
     public boolean isWantUpload() {

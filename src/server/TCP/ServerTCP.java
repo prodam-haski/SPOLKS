@@ -44,7 +44,7 @@ public class ServerTCP implements Runnable {
 
                         if (client.getInetAddress().equals(s.getClientAddress())) {
                             isBroken = true;
-                            out.writeUTF("Last connection wasn't stable ");
+                            out.writeUTF("Last connection wasn't stable. ");
                             out.flush();
 
                             if (s.isUploading()) {
@@ -56,7 +56,7 @@ public class ServerTCP implements Runnable {
                             }
                             if (s.isDownloading()) {
                                 System.out.println(s.getDownloadFileName());
-                                out.writeUTF("Last downloading was broken");
+                                out.writeUTF("Last downloading was broken.");
                                 out.flush();
                                 Thread.sleep(1000);
                                 out.writeUTF(s.getDownloadFileName());
@@ -69,7 +69,7 @@ public class ServerTCP implements Runnable {
                                 if (brokenConnections.isEmpty()) break;
                             }
                             if (!s.isDownloading() && !s.isUploading()) {
-                                out.writeUTF("Files are not lost");
+                                out.writeUTF("Files are not lost.");
                                 brokenConnections.remove(s);
                                 if (brokenConnections.isEmpty()) break;
                             }
@@ -77,13 +77,13 @@ public class ServerTCP implements Runnable {
 
                     }
                     if (!isBroken) {
-                        System.out.println("Last connection was stable");
-                        out.writeUTF("Last connection was stable");
+                        System.out.println("Last connection was stable.");
+                        out.writeUTF("Last connection was stable.");
                         out.flush();
                     }
                 } else {
-                    System.out.println("First connection or last connection was stable");
-                    out.writeUTF("First connection");
+                    System.out.println("First connection or last connection was stable.");
+                    out.writeUTF("First connection.");
                     out.flush();
                 }
 

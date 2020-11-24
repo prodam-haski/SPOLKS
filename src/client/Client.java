@@ -1,12 +1,14 @@
 package client;
 
+import GUI.ClientWindow;
+
 import java.io.*;
 
 public class Client {
 
     public static void main(String[] args) throws IOException {
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        /*BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
         menu();
 
         try {
@@ -33,7 +35,10 @@ public class Client {
             }
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
-        }
+        }*/
+
+        ClientWindow clientWindow = new ClientWindow();
+        clientWindow.installGUI();
     }
 
     private static void menu() {

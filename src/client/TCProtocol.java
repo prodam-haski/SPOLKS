@@ -10,11 +10,76 @@ public class TCProtocol implements Runnable {
     private DataOutputStream dataOutputStream;
 
     private String answer;
+    private String finalString;
 
-    TCProtocol() throws IOException {
+    public TCProtocol() throws IOException {
         socket = new Socket("127.0.0.1", 3345);
         dataInputStream = new DataInputStream(socket.getInputStream());
         dataOutputStream = new DataOutputStream(socket.getOutputStream());
+    }
+
+    public void openConnection() {
+        try {
+            answer = dataInputStream.readUTF();
+            finalString = "Client connected to socket. ";
+            finalString += answer;
+
+            if (answer.startsWith("Last connection wasn't stable")) {
+                answer = dataInputStream.readUTF();
+                finalString += answer;
+                if (answer.startsWith("Last down")) {
+                    answer = dataInputStream.readUTF();
+                    finalString += answer;
+                    download("download" + answer);
+
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void closeConnection() throws IOException {
+        if(!socket.isClosed()) {
+            dataOutputStream.writeUTF("quit");
+            finalString = dataInputStream.readUTF();
+            dataOutputStream.close();
+            dataInputStream.close();
+            socket.close();
+        }else finalString = "TCP connection isn't active";
+    }
+
+    public void request(String clientCommand){
+        boolean isSpecialCommand = false;
+        try {
+            if (!socket.isOutputShutdown()) {
+                if (clientCommand.startsWith("upload")) {
+                    isSpecialCommand = true;
+                    upload(clientCommand);
+                }
+                if (clientCommand.startsWith("download")) {
+                    isSpecialCommand = true;
+                    download(clientCommand);
+
+                }
+                if (clientCommand.startsWith("exit")) {
+                    dataOutputStream.writeUTF("quit");
+                    finalString = dataInputStream.readUTF();
+                    dataOutputStream.close();
+                    dataInputStream.close();
+                    socket.close();
+                    return;
+                }
+                if (!isSpecialCommand) {
+                    dataOutputStream.writeUTF(clientCommand);
+                    dataOutputStream.flush();
+                    System.out.println("Client sent message " + clientCommand + " to server.");
+                }
+                finalString = dataInputStream.readUTF();
+            } else finalString = "Disconect...";
+        } catch (IOException e) {
+            finalString = "Disconect...";
+        }
     }
 
     @Override
@@ -49,7 +114,7 @@ public class TCProtocol implements Runnable {
                             download(clientCommand);
 
                         }
-                        if(clientCommand.startsWith("exit")){
+                        if (clientCommand.startsWith("exit")) {
                             dataOutputStream.writeUTF("quit");
                             System.out.println(dataInputStream.readUTF());
                             dataOutputStream.close();
@@ -63,7 +128,7 @@ public class TCProtocol implements Runnable {
                             System.out.println("Client sent message " + clientCommand + " to server.");
                         }
                         System.out.println(dataInputStream.readUTF());
-                    }else System.out.println("Disconect...");
+                    } else System.out.println("Disconect...");
                 }
             }
         } catch (IOException e) {
@@ -77,7 +142,7 @@ public class TCProtocol implements Runnable {
             String fileName = clientCommand.replace("download", "").trim();
             dataOutputStream.writeUTF(clientCommand);
             answer = dataInputStream.readUTF();
-            System.out.println(answer);
+            finalString = answer;
             if (answer.equals("Server reply - File found - OK")) {
                 long fileSize = dataInputStream.readLong();
                 FileOutputStream fout = new FileOutputStream(fileName);
@@ -95,12 +160,11 @@ public class TCProtocol implements Runnable {
                 long endTimeStamp = System.nanoTime();
                 fout.flush();
                 fout.close();
-                System.out.println("File was received");
-                System.out.println("Speed " + total + " bytes in " + (endTimeStamp - startTimeStamp) / 1000000000 + " seconds");
+                finalString +="File was received. Speed " + total + " bytes in " + (endTimeStamp - startTimeStamp) / 1000000000 + " seconds";
                 dataOutputStream.writeUTF("File was received");
             }
         } catch (IOException e) {
-            System.out.println("Disconect...");
+            finalString = "Disconect...";
         }
     }
 
@@ -109,7 +173,7 @@ public class TCProtocol implements Runnable {
         File file = new File(filePath);
         try {
             if (!file.exists()) {
-                System.out.println("File not found");
+                finalString = "File not found";
                 dataOutputStream.writeUTF("File not found");
             } else {
                 dataOutputStream.writeUTF("upload");
@@ -127,11 +191,15 @@ public class TCProtocol implements Runnable {
                 }
                 long endTimeStamp = System.nanoTime();
                 dataOutputStream.flush();
-                System.out.println("Speed " + total + " bytes in " + (endTimeStamp - startTimeStamp) / 1000000000 + " seconds");
+                finalString = "Speed " + total + " bytes in " + (endTimeStamp - startTimeStamp) / 1000000000 + " seconds";
                 fin.close();
             }
         } catch (IOException e) {
-            System.out.println("Disconect...");
+            finalString = "Disconect...";
         }
+    }
+
+    public String getFinalString() {
+        return finalString;
     }
 }
